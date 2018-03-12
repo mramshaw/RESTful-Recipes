@@ -71,7 +71,7 @@ Successful startup will be indicated as follows:
 
 This should make the web service available at:
 
-    http://localhost/recipes
+    http://localhost/v1/recipes
 
 Once the service is running, it is possible to `curl` it. Check `CURLs.txt` for examples.
 
