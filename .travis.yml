@@ -1,0 +1,20 @@
+sudo: required
+services:
+
+  - docker
+
+language: go
+
+go:
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+  - master
+
+script:
+  - docker-compose up -d
+  - docker-compose run golang make coverage
+  - docker-compose down
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

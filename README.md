@@ -1,5 +1,10 @@
 # RESTful recipes
 
+[![Build status](https://travis-ci.org/mramshaw/RESTful-Recipes.svg?branch=master)](https://travis-ci.org/mramshaw/RESTful-Recipes)
+[![Coverage Status](http://codecov.io/github/mramshaw/RESTful-Recipes/coverage.svg?branch=master)](http://codecov.io/github/mramshaw/RESTful-Recipes?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mramshaw/RESTful-Recipes?style=flat-square)](https://goreportcard.com/report/github.com/mramshaw/RESTful-Recipes)
+[![GitHub release](https://img.shields.io/github/release/mramshaw/RESTful-Recipes.svg?style=flat-square)](https://github.com/mramshaw/RESTful-Recipes/releases)
+
 A more formal REST API in Golang.
 
 This builds on my [Simple REST API in Golang](https://github.com/mramshaw/Simple-REST-API).
@@ -10,7 +15,7 @@ All dependencies are handled via [Docker](https://www.docker.com/products/docker
 
 TDD (Test-Driven Development) is implemented; the build will fail if the tests do not pass.
 
-Likewise the build will fail if __golint__ or __go vet__ fails.
+Likewise the build will fail if either __golint__ or __go vet__ fails.
 
 Enforces industry-standard __gofmt__ code formatting.
 

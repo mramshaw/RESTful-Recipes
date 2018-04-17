@@ -33,7 +33,10 @@ test:		vet
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -v test
 
 build:		test
-		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -o $(MAIN) main.go
+		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(MAIN) main.go
+
+coverage:
+		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -coverprofile=coverage.txt -covermode=atomic test
 
 run:
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go run main.go
