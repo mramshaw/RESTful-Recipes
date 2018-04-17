@@ -1,9 +1,9 @@
 sudo: required
 services:
   - docker
+  - postgresql
 
 script:
-  - docker-compose up -d postgres
   - docker-compose run golang make test
   - docker-compose run golang make coverage
   - docker-compose down
