@@ -438,6 +438,59 @@ func TestSearch(t *testing.T) {
 	}
 }
 
+func BenchmarkCreateRateAndDeleteRecipe(b *testing.B) {
+	clearTables()
+
+	for i := 1; i < 501; i++ {
+		// Create recipe
+		payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+		req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+		if err != nil {
+			b.Errorf("Error on http.NewRequest: %s", err)
+		}
+		response := executeRequest(req)
+
+		if response.Code != http.StatusCreated {
+			b.Errorf("Expected response code %d. Got %d\n", http.StatusCreated, response.Code)
+		}
+
+		// Rate recipe
+		payload = []byte(`{"rating":3}`)
+
+		req, err = http.NewRequest("POST", "/v1/recipes/"+strconv.Itoa(i)+"/rating", bytes.NewBuffer(payload))
+		if err != nil {
+			b.Errorf("Error on http.NewRequest (rating): %s", err)
+		}
+		response = executeRequest(req)
+
+		if response.Code != http.StatusCreated {
+			b.Errorf("Expected response code %d. Got %d\n", http.StatusCreated, response.Code)
+		}
+
+		// Delete recipe
+		req, err = http.NewRequest("DELETE", "/v1/recipes/"+strconv.Itoa(i), nil)
+		if err != nil {
+			b.Errorf("Error on http.NewRequest (DELETE): %s", err)
+		}
+		response = executeRequest(req)
+
+		if response.Code != http.StatusOK {
+			b.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
+		}
+
+		// Query recipe
+		req, err = http.NewRequest("GET", "/v1/recipes/"+strconv.Itoa(i), nil)
+		if err != nil {
+			b.Errorf("Error on http.NewRequest (GET): %s", err)
+		}
+		response = executeRequest(req)
+		if response.Code != http.StatusNotFound {
+			b.Errorf("Expected response code %d. Got %d\n", http.StatusNotFound, response.Code)
+		}
+	}
+}
+
 func addRecipes(count int) {
 	if count < 1 {
 		count = 1

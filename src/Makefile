@@ -30,7 +30,7 @@ vet:		lint
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go tool vet test/*.go
 
 test:		vet
-		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -v test
+		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -bench . -v test
 
 build:		test
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(MAIN) main.go
