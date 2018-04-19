@@ -345,7 +345,7 @@ func TestSearch(t *testing.T) {
 	mw.WriteField("preptime", "50.0")
 	mw.Close()
 
-	req, err = http.NewRequest("POST", "/v1/recipes/search", &bb)
+	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (4th POST): %s", err)
 	}
@@ -397,7 +397,7 @@ func TestSearch(t *testing.T) {
 	mw.WriteField("start", "1")
 	mw.Close()
 
-	req, err = http.NewRequest("POST", "/v1/recipes/search", &bb)
+	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (5th POST): %s", err)
 	}
@@ -420,7 +420,7 @@ func TestSearch(t *testing.T) {
 	mw.WriteField("preptime", "30.0")
 	mw.Close()
 
-	req, err = http.NewRequest("POST", "/v1/recipes/search", &bb)
+	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (6th POST): %s", err)
 	}

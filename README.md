@@ -24,7 +24,7 @@ All testing can be done with [curl](CURLs.txt).
 
 ## Features
 
-- uses [Gorilla MUX](https://github.com/Gorilla/mux)
+- uses [httprouter](https://github.com/julienschmidt/httprouter)
 - uses [Pure Go postgres driver](https://github.com/lib/pq)
 
 
@@ -118,7 +118,7 @@ The command to run:
 - [ ] Refactor data access into a DAO module
 - [ ] Add tests for the DAO
 - [ ] Add a health check
-- [ ] Refactor code to NOT use Gorilla/mux
+- [x] Migrate from Gorilla/mux to julienschmidt/httprouter
 - [ ] Implement CORS
 - [ ] Implement graceful shutdown (available since __Go 1.8__)
 - [ ] Add Prometheus-style instrumentation

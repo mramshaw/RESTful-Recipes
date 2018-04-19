@@ -11,20 +11,19 @@ import (
 	// local packages
 	"recipes"
 	// GitHub packages
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	// Standard SQL Override
 	_ "github.com/lib/pq"
 )
 
 // App represents the application
 type App struct {
-	Router *mux.Router
+	Router *httprouter.Router
 	DB     *sql.DB
 }
 
-func (a *App) getRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	id, err := strconv.Atoi(params["id"])
+func (a *App) getRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid recipe ID")
 		return
@@ -42,7 +41,7 @@ func (a *App) getRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusOK, r)
 }
 
-func (a *App) getRecipesEndpoint(w http.ResponseWriter, req *http.Request) {
+func (a *App) getRecipesEndpoint(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	count, _ := strconv.Atoi(req.FormValue("count"))
 	start, _ := strconv.Atoi(req.FormValue("start"))
 
@@ -60,7 +59,7 @@ func (a *App) getRecipesEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusOK, recipes)
 }
 
-func (a *App) createRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
+func (a *App) createRecipeEndpoint(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var r recipes.Recipe
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&r); err != nil {
@@ -75,9 +74,8 @@ func (a *App) createRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusCreated, r)
 }
 
-func (a *App) modifyRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	id, err := strconv.Atoi(params["id"])
+func (a *App) modifyRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid recipe ID")
 		return
@@ -97,9 +95,8 @@ func (a *App) modifyRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusOK, r)
 }
 
-func (a *App) deleteRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	id, err := strconv.Atoi(params["id"])
+func (a *App) deleteRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid recipe ID")
 		return
@@ -112,9 +109,8 @@ func (a *App) deleteRecipeEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
-func (a *App) addRatingEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	recipeID, err := strconv.Atoi(params["recipe_id"])
+func (a *App) addRatingEndpoint(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	recipeID, err := strconv.Atoi(ps.ByName("recipe_id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid recipe ID")
 		return
@@ -133,7 +129,7 @@ func (a *App) addRatingEndpoint(w http.ResponseWriter, req *http.Request) {
 	respondWithJSON(w, http.StatusCreated, rr)
 }
 
-func (a *App) searchRecipesEndpoint(w http.ResponseWriter, req *http.Request) {
+func (a *App) searchRecipesEndpoint(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	count, _ := strconv.Atoi(req.FormValue("count"))
 	start, _ := strconv.Atoi(req.FormValue("start"))
 
@@ -183,18 +179,16 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Fatal(err)
 	}
 
-	a.Router = mux.NewRouter()
+	a.Router = httprouter.New()
 
-	v1 := a.Router.PathPrefix("/v1").Subrouter()
-
-	v1.HandleFunc("/recipes", a.getRecipesEndpoint).Methods("GET")
-	v1.HandleFunc("/recipes", a.createRecipeEndpoint).Methods("POST")
-	v1.HandleFunc("/recipes/{id:[0-9]+}", a.getRecipeEndpoint).Methods("GET")
-	v1.HandleFunc("/recipes/{id:[0-9]+}", a.modifyRecipeEndpoint).Methods("PUT")
-	v1.HandleFunc("/recipes/{id:[0-9]+}", a.modifyRecipeEndpoint).Methods("PATCH")
-	v1.HandleFunc("/recipes/{id:[0-9]+}", a.deleteRecipeEndpoint).Methods("DELETE")
-	v1.HandleFunc("/recipes/{recipe_id:[0-9]+}/rating", a.addRatingEndpoint).Methods("POST")
-	v1.HandleFunc("/recipes/search", a.searchRecipesEndpoint).Methods("POST")
+	a.Router.GET("/v1/recipes", a.getRecipesEndpoint)
+	a.Router.POST("/v1/recipes", a.createRecipeEndpoint)
+	a.Router.GET("/v1/recipes/:id", a.getRecipeEndpoint)
+	a.Router.PUT("/v1/recipes/:id", a.modifyRecipeEndpoint)
+	a.Router.PATCH("/v1/recipes/:id", a.modifyRecipeEndpoint)
+	a.Router.DELETE("/v1/recipes/:id", a.deleteRecipeEndpoint)
+	a.Router.POST("/v1/recipes/:recipe_id/rating", a.addRatingEndpoint)
+	a.Router.POST("/v1/search/recipes", a.searchRecipesEndpoint)
 }
 
 // Run starts the app and serves on the specified port
