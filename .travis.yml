@@ -1,17 +1,14 @@
 sudo: required
 services:
   - docker
-  - postgresql
 
 before_script:
-  - psql -c 'CREATE DATABASE recipes;' -U postgres
-  - psql -c "CREATE USER travis_recipes WITH PASSWORD 'travis_recipes';" -U postgres
-  - psql -c 'ALTER DATABASE recipes OWNER TO travis_recipes;' -U postgres
-  - psql -h localhost -U travis_recipes -d recipes -l
+  - sudo /etc/init.d/postgresql stop
 
 script:
-  - docker-compose -f docker-compose-travis.yml run golang make test
-  - docker-compose -f docker-compose-travis.yml run golang make coverage
+  - docker-compose up -d postgres
+  - docker-compose run golang make test
+  - docker-compose run golang make coverage
   - docker-compose down
 
 after_success:
