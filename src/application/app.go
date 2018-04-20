@@ -168,9 +168,9 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 // Initialize sets up the database connection, router, and routes for the app
-func (a *App) Initialize(user, password, dbname string) {
+func (a *App) Initialize(host, user, password, dbname string) {
 
-	connectionString := fmt.Sprintf("postgres://%s:%s@postgres-backend/%s?sslmode=disable", user, password, dbname)
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, host, dbname)
 
 	var err error
 
