@@ -3,6 +3,9 @@ services:
   - docker
   - postgresql
 
+before_script:
+  - psql -c 'create database recipes;' -U postgres
+
 script:
   - docker-compose -f docker-compose-travis.yml run golang make test
   - docker-compose -f docker-compose-travis.yml run golang make coverage
