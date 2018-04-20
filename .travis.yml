@@ -4,8 +4,8 @@ services:
   - postgresql
 
 script:
-  - docker-compose run golang make test
-  - docker-compose run golang make coverage
+  - docker-compose -f docker-compose-travis.yml run golang make test
+  - docker-compose -f docker-compose-travis.yml run golang make coverage
   - docker-compose down
 
 after_success:
