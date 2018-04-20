@@ -4,11 +4,11 @@ services:
   - postgresql
 
 before_script:
-  - psql -c 'create database recipes;' -U postgres
-  - psql -c 'create role dbowner nologin;' -U postgres
-  - psql -c 'alter database recipes owner dbowner;' -U postgres
-  - psql -c 'create user travis with password "travis";' -U postgres
-  - psql -c 'grant dbowner to travis;' -U postgres
+  - psql -c 'CREATE DATABASE recipes;' -U postgres
+  - psql -c 'CREATE ROLE dbowner NOLOGIN;' -U postgres
+  - psql -c 'ALTER DATABASE recipes OWNER TO dbowner;' -U postgres
+  - psql -c "CREATE USER travis WITH PASSWORD 'travis';" -U postgres
+  - psql -c 'GRANT dbowner TO travis;' -U postgres
 
 script:
   - docker-compose -f docker-compose-travis.yml run golang make test
