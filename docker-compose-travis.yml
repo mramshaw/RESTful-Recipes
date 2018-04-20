@@ -26,7 +26,7 @@ services:
         environment:
             DEBUG: 'true'
             PORT: '8080'
-            POSTGRES_HOST: 127.0.0.1
+            POSTGRES_HOST: localhost
             POSTGRES_USER: travis_recipes
             POSTGRES_PASSWORD: travis_recipes
             POSTGRES_DB: recipes

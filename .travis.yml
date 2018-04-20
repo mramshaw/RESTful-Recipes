@@ -5,10 +5,9 @@ services:
 
 before_script:
   - psql -c 'CREATE DATABASE recipes;' -U postgres
-  - psql -c 'CREATE ROLE dbowner NOLOGIN;' -U postgres
-  - psql -c 'ALTER DATABASE recipes OWNER TO dbowner;' -U postgres
   - psql -c "CREATE USER travis_recipes WITH PASSWORD 'travis_recipes';" -U postgres
-  - psql -c 'GRANT dbowner TO travis_recipes;' -U postgres
+  - psql -c 'ALTER DATABASE recipes OWNER TO travis_recipes;' -U postgres
+  - cat /etc/hosts
 
 script:
   - docker-compose -f docker-compose-travis.yml run golang make test
