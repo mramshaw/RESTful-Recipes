@@ -28,6 +28,6 @@ RATE:
 
 SEARCH:
 
-    curl -v -F count=5 -F start=1 -F preptime=0.5 localhost/v1/search/recipes
+	curl -v -F count=5 -F start=0 -F preptime=2 localhost/v1/search/recipes
 
-    curl -v -F preptime=0.5 localhost/v1/search/recipes
+	curl -v -F preptime=2 localhost/v1/search/recipes

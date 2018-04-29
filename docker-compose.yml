@@ -7,7 +7,7 @@ services:
 
     golang:
         build: .
-        image: mramshaw4docs/golang-alpine:1.8
+        image: mramshaw4docs/golang-alpine:1.10.1
         networks:
           recipes:
         depends_on:
@@ -28,9 +28,9 @@ services:
             DEBUG: 'true'
             PORT: '8080'
             POSTGRES_HOST: postgres-backend
-            POSTGRES_USER: passw0rd
+            POSTGRES_USER: recipe_user
             POSTGRES_PASSWORD: passw0rd
-            POSTGRES_DB: passw0rd
+            POSTGRES_DB: rrecipes
 
     postgres:
         image: onjin/alpine-postgres:9.5
@@ -43,6 +43,6 @@ services:
             - "5432:5432"
         environment:
             LC_ALL: C.UTF-8
-            POSTGRES_USER: passw0rd
+            POSTGRES_USER: recipe_user
             POSTGRES_PASSWORD: passw0rd
-            POSTGRES_DB: passw0rd
+            POSTGRES_DB: rrecipes

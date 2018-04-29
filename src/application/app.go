@@ -167,6 +167,23 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+func basicAuth(h httprouter.Handle, requiredUser, requiredPassword string) httprouter.Handle {
+
+	return func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		// Get the Basic Authentication credentials
+		user, password, hasAuth := req.BasicAuth()
+
+		if hasAuth && user == requiredUser && password == requiredPassword {
+			// Delegate request to the given handle
+			h(w, req, ps)
+		} else {
+			// Request Basic Authentication otherwise
+			w.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		}
+	}
+}
+
 // Initialize sets up the database connection, router, and routes for the app
 func (a *App) Initialize(host, user, password, dbname string) {
 
@@ -181,12 +198,15 @@ func (a *App) Initialize(host, user, password, dbname string) {
 
 	a.Router = httprouter.New()
 
+	authUser := "chef"
+	authPass := "bourdain"
+
 	a.Router.GET("/v1/recipes", a.getRecipesEndpoint)
-	a.Router.POST("/v1/recipes", a.createRecipeEndpoint)
+	a.Router.POST("/v1/recipes", basicAuth(a.createRecipeEndpoint, authUser, authPass))
 	a.Router.GET("/v1/recipes/:id", a.getRecipeEndpoint)
-	a.Router.PUT("/v1/recipes/:id", a.modifyRecipeEndpoint)
-	a.Router.PATCH("/v1/recipes/:id", a.modifyRecipeEndpoint)
-	a.Router.DELETE("/v1/recipes/:id", a.deleteRecipeEndpoint)
+	a.Router.PUT("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPass))
+	a.Router.PATCH("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPass))
+	a.Router.DELETE("/v1/recipes/:id", basicAuth(a.deleteRecipeEndpoint, authUser, authPass))
 	a.Router.POST("/v1/recipes/:recipe_id/rating", a.addRatingEndpoint)
 	a.Router.POST("/v1/search/recipes", a.searchRecipesEndpoint)
 }

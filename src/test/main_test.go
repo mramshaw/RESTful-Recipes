@@ -63,7 +63,7 @@ func TestGetNonExistentRecipe(t *testing.T) {
 	}
 }
 
-func TestCreateRecipe(t *testing.T) {
+func TestCreateRecipeNoCredentials(t *testing.T) {
 	clearTables()
 
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
@@ -72,6 +72,21 @@ func TestCreateRecipe(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest: %s", err)
 	}
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestCreateRecipeWithCredentials(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	if err != nil {
+		t.Errorf("Error on http.NewRequest: %s", err)
+	}
+	req.SetBasicAuth("chef", "bourdain")
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -117,7 +132,7 @@ func TestGetRecipe(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
-func TestUpdatePutRecipe(t *testing.T) {
+func TestUpdatePutRecipeNoCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
 
@@ -137,29 +152,10 @@ func TestUpdatePutRecipe(t *testing.T) {
 	}
 	response = executeRequest(req)
 
-	checkResponseCode(t, http.StatusOK, response.Code)
-
-	var m map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &m)
-
-	if m["id"] != originalRecipe["id"] {
-		t.Errorf("Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
-	}
-	if m["name"] == originalRecipe["name"] {
-		t.Errorf("Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
-	}
-	if m["preptime"] == originalRecipe["preptime"] {
-		t.Errorf("Expected the price to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
-	}
-	if m["difficulty"] == originalRecipe["difficulty"] {
-		t.Errorf("Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
-	}
-	if m["vegetarian"] == originalRecipe["vegetarian"] {
-		t.Errorf("Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
-	}
+	checkResponseCode(t, http.StatusUnauthorized, response.Code)
 }
 
-func TestUpdatePatchRecipe(t *testing.T) {
+func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
 
@@ -173,10 +169,11 @@ func TestUpdatePatchRecipe(t *testing.T) {
 
 	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
 
-	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
+	req, err = http.NewRequest("PUT", "/v1/recipes/1", bytes.NewBuffer(payload))
 	if err != nil {
-		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
+		t.Errorf("Error on http.NewRequest (PUT): %s", err)
 	}
+	req.SetBasicAuth("chef", "bourdain")
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -201,7 +198,73 @@ func TestUpdatePatchRecipe(t *testing.T) {
 	}
 }
 
-func TestDeleteRecipe(t *testing.T) {
+func TestUpdatePatchRecipeNoCredentials(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (GET): %s", err)
+	}
+	response := executeRequest(req)
+	var originalRecipe map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
+
+	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
+	}
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (GET): %s", err)
+	}
+	response := executeRequest(req)
+	var originalRecipe map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
+
+	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
+	}
+	req.SetBasicAuth("chef", "bourdain")
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["id"] != originalRecipe["id"] {
+		t.Errorf("Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
+	}
+	if m["name"] == originalRecipe["name"] {
+		t.Errorf("Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
+	}
+	if m["preptime"] == originalRecipe["preptime"] {
+		t.Errorf("Expected the price to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
+	}
+	if m["difficulty"] == originalRecipe["difficulty"] {
+		t.Errorf("Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
+	}
+	if m["vegetarian"] == originalRecipe["vegetarian"] {
+		t.Errorf("Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
+	}
+}
+
+func TestDeleteRecipeNoCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
 
@@ -216,6 +279,27 @@ func TestDeleteRecipe(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (DELETE): %s", err)
 	}
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusUnauthorized, response.Code)
+}
+
+func TestDeleteRecipeWithCredentials(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (GET): %s", err)
+	}
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("DELETE", "/v1/recipes/1", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (DELETE): %s", err)
+	}
+	req.SetBasicAuth("chef", "bourdain")
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -265,6 +349,7 @@ func TestAddRating(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
 	}
+	req.SetBasicAuth("chef", "bourdain")
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -298,6 +383,7 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
 	}
+	req.SetBasicAuth("chef", "bourdain")
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)

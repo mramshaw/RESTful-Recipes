@@ -7,9 +7,11 @@ before_script:
 
 script:
   - docker-compose up -d postgres
-  - docker-compose run golang make test
-  - docker-compose run golang make coverage
+  - docker-compose run golang make build
   - docker-compose down
+
+notifications:
+  email: false
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
