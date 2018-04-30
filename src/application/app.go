@@ -185,9 +185,9 @@ func basicAuth(h httprouter.Handle, requiredUser, requiredPassword string) httpr
 }
 
 // Initialize sets up the database connection, router, and routes for the app
-func (a *App) Initialize(host, user, password, dbname string) {
+func (a *App) Initialize(dbHost, dbUser, dbPassword, dbName, authUser, authPassword string) {
 
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, host, dbname)
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbName)
 
 	var err error
 
@@ -198,15 +198,12 @@ func (a *App) Initialize(host, user, password, dbname string) {
 
 	a.Router = httprouter.New()
 
-	authUser := "chef"
-	authPass := "bourdain"
-
 	a.Router.GET("/v1/recipes", a.getRecipesEndpoint)
-	a.Router.POST("/v1/recipes", basicAuth(a.createRecipeEndpoint, authUser, authPass))
+	a.Router.POST("/v1/recipes", basicAuth(a.createRecipeEndpoint, authUser, authPassword))
 	a.Router.GET("/v1/recipes/:id", a.getRecipeEndpoint)
-	a.Router.PUT("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPass))
-	a.Router.PATCH("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPass))
-	a.Router.DELETE("/v1/recipes/:id", basicAuth(a.deleteRecipeEndpoint, authUser, authPass))
+	a.Router.PUT("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPassword))
+	a.Router.PATCH("/v1/recipes/:id", basicAuth(a.modifyRecipeEndpoint, authUser, authPassword))
+	a.Router.DELETE("/v1/recipes/:id", basicAuth(a.deleteRecipeEndpoint, authUser, authPassword))
 	a.Router.POST("/v1/recipes/:recipe_id/rating", a.addRatingEndpoint)
 	a.Router.POST("/v1/search/recipes", a.searchRecipesEndpoint)
 }

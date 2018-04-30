@@ -31,6 +31,8 @@ services:
             POSTGRES_USER: recipe_user
             POSTGRES_PASSWORD: passw0rd
             POSTGRES_DB: rrecipes
+            AUTH_USER: chef
+            AUTH_PASSWORD: bourdain
 
     postgres:
         image: onjin/alpine-postgres:9.5

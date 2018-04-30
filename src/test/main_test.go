@@ -16,13 +16,19 @@ import (
 
 var app application.App
 
+var authUser, authPassword string
+
 func TestMain(m *testing.M) {
+	authUser = os.Getenv("AUTH_USER")
+	authPassword = os.Getenv("AUTH_PASSWORD")
 	app = application.App{}
 	app.Initialize(
 		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"))
+		os.Getenv("POSTGRES_DB"),
+		authUser,
+		authPassword)
 	ensureTablesExist()
 	code := m.Run()
 	clearTables()
@@ -86,7 +92,7 @@ func TestCreateRecipeWithCredentials(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest: %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -173,7 +179,7 @@ func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (PUT): %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -239,7 +245,7 @@ func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -299,7 +305,7 @@ func TestDeleteRecipeWithCredentials(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (DELETE): %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -349,7 +355,7 @@ func TestAddRating(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -383,7 +389,7 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
 	}
-	req.SetBasicAuth("chef", "bourdain")
+	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)

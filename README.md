@@ -112,6 +112,7 @@ The command to run:
 
 - [x] Upgrade to latest Go (as of posting, 1.10.1)
 - [x] Add Basic Auth to certain endpoints (POST, PUT/PATCH, DELETE)
+- [x] 12-Factor Basic Auth parameters
 - [ ] Fix code coverage testing
 - [ ] Upgrade to latest Postgres
 - [ ] Persist back-end Postgres
