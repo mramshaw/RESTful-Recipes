@@ -1,3 +1,4 @@
+// Package application is a package encompassing the bulk of the application.
 package application
 
 import (
