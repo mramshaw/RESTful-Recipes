@@ -4,7 +4,7 @@ GOARCH		:= amd64
 
 MAIN		:= restful_recipes
 
-.PHONY:		benchmark, coverage, run, clean
+.PHONY:		benchmark, run, clean
 
 all:		$(MAIN)
 		@echo '$(MAIN)' has been compiled
@@ -30,7 +30,8 @@ vet:		lint
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go tool vet test/*.go
 
 test:		vet
-		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -coverprofile=coverage.txt -covermode=atomic -v test
+		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -coverpkg application,recipes -coverprofile=coverage.txt -covermode=atomic -v . ./...
+		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go tool cover -html=coverage.txt -o coverage.html
 
 build:		test
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(MAIN) main.go
@@ -38,11 +39,8 @@ build:		test
 benchmark:
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go test -bench . -v test
 
-coverage:
-		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go tool cover -html=coverage.txt -o coverage.html
-
 run:
 		GOPATH=$(GOPATH) GOOS=$(GOOS) GOARCH=$(GOARCH) go run main.go
 
 clean:
-		rm ./$(MAIN)
+		rm -f ./$(MAIN) coverage.html coverage.txt

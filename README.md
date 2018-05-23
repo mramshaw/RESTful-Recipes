@@ -1,6 +1,7 @@
 # RESTful recipes
 
 [![Build status](https://travis-ci.org/mramshaw/RESTful-Recipes.svg?branch=master)](https://travis-ci.org/mramshaw/RESTful-Recipes)
+[![Coverage Status](http://codecov.io/github/mramshaw/RESTful-Recipes/coverage.svg?branch=master)](http://codecov.io/github/mramshaw/RESTful-Recipes?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mramshaw/RESTful-Recipes?style=flat-square)](https://goreportcard.com/report/github.com/mramshaw/RESTful-Recipes)
 [![GitHub release](https://img.shields.io/github/release/mramshaw/RESTful-Recipes.svg?style=flat-square)](https://github.com/mramshaw/RESTful-Recipes/releases)
 
@@ -113,7 +114,7 @@ The command to run:
 - [x] Upgrade to latest Go (as of posting, 1.10.1)
 - [x] Add Basic Auth to certain endpoints (POST, PUT/PATCH, DELETE)
 - [x] 12-Factor Basic Auth parameters
-- [ ] Fix code coverage testing
+- [x] Fix code coverage testing
 - [ ] Upgrade to latest Postgres
 - [ ] Persist back-end Postgres
 - [ ] Add a SWAGGER definition
