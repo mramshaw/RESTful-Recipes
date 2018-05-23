@@ -51,6 +51,18 @@ func TestEmptyTables(t *testing.T) {
 	}
 }
 
+func TestGetBadRecipe(t *testing.T) {
+	clearTables()
+
+	req, err := http.NewRequest("GET", "/v1/recipes/a", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest: %s", err)
+	}
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
 func TestGetNonExistentRecipe(t *testing.T) {
 	clearTables()
 
@@ -483,6 +495,56 @@ func TestSearch(t *testing.T) {
 		t.Errorf("Expected recipe ID to be '1'. Got '%v'", m["id"])
 	}
 
+	mw = multipart.NewWriter(&bb)
+	mw.WriteField("count", "15")
+	mw.WriteField("start", "-5")
+	mw.WriteField("preptime", "50.0")
+	mw.Close()
+
+	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest (5th POST): %s", err)
+	}
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	json.Unmarshal(response.Body.Bytes(), &mm)
+	// only want the first one
+	m = mm[0]
+
+	if m["name"] != "test recipe" {
+		t.Errorf("Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
+	}
+
+	if m["preptime"] != 0.1 {
+		t.Errorf("Expected recipe price to be '0.1'. Got '%v'", m["preptime"])
+	}
+
+	// difficulty is compared to 2.0 because JSON unmarshaling converts numbers to
+	//     floats (float64), when the target is a map[string]interface{}
+	if m["difficulty"] != 2.0 {
+		t.Errorf("Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
+	}
+
+	if m["vegetarian"] != true {
+		t.Errorf("Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
+	}
+
+	// the avg_rating is compared to 2.5 because JSON unmarshaling converts numbers to
+	//     floats (float64), when the target is a map[string]interface{}
+	if m["avg_rating"] != 2.5 {
+		t.Errorf("Expected average recipe rating to be '2.5'. Got '%v'", m["id"])
+	}
+
+	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
+	//     floats (float64), when the target is a map[string]interface{}
+	if m["id"] != 1.0 {
+		t.Errorf("Expected recipe ID to be '1'. Got '%v'", m["id"])
+	}
+
 	addRecipes(12)
 
 	mw = multipart.NewWriter(&bb)
@@ -492,7 +554,7 @@ func TestSearch(t *testing.T) {
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
 	if err != nil {
-		t.Errorf("Error on http.NewRequest (5th POST): %s", err)
+		t.Errorf("Error on http.NewRequest (6th POST): %s", err)
 	}
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
@@ -515,7 +577,7 @@ func TestSearch(t *testing.T) {
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
 	if err != nil {
-		t.Errorf("Error on http.NewRequest (6th POST): %s", err)
+		t.Errorf("Error on http.NewRequest (7th POST): %s", err)
 	}
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
