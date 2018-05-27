@@ -52,10 +52,7 @@ func (r *Recipe) CreateRecipe(db *sql.DB) error {
 	err := db.QueryRow(
 		"INSERT INTO recipes(name, preptime, difficulty, vegetarian) VALUES($1, $2, $3, $4) RETURNING id",
 		r.Name, r.PrepTime, r.Difficulty, r.Vegetarian).Scan(&r.ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // GetRecipes returns a collection of known recipes.
@@ -113,10 +110,5 @@ func (rr *RecipeRating) AddRecipeRating(db *sql.DB) error {
 	err := db.QueryRow(
 		"INSERT INTO recipe_ratings(recipe_id, rating) VALUES($1, $2) RETURNING rating_id",
 		rr.RecipeID, rr.Rating).Scan(&rr.ID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

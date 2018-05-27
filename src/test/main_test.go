@@ -150,6 +150,26 @@ func TestGetRecipe(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
+func TestGetRecipes(t *testing.T) {
+	clearTables()
+	addRecipes(3)
+
+	req, err := http.NewRequest("GET", "/v1/recipes", nil)
+	if err != nil {
+		t.Errorf("Error on http.NewRequest: %s", err)
+	}
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var mm []map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &mm)
+
+	if len(mm) != 3 {
+		t.Errorf("Expected '3' recipes. Got '%v'", len(mm))
+	}
+}
+
 func TestUpdatePutRecipeNoCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
