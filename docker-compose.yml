@@ -7,7 +7,7 @@ services:
 
     golang:
         build: .
-        image: mramshaw4docs/golang-alpine:1.10.1
+        image: mramshaw4docs/golang:1.11
         networks:
           recipes:
         depends_on:

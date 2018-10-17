@@ -154,7 +154,7 @@ func TestGetRecipes(t *testing.T) {
 	clearTables()
 	addRecipes(3)
 
-	req, err := http.NewRequest("GET", "/v1/recipes", nil)
+	req, err := http.NewRequest("GET", "/v1/recipes?count=25&start=-1", nil)
 	if err != nil {
 		t.Errorf("Error on http.NewRequest: %s", err)
 	}

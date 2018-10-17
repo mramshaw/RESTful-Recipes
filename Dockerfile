@@ -1,6 +1,4 @@
-FROM golang:1.10.1-alpine
-
-RUN apk add --no-cache --update git make
+FROM golang:1.11
 
 RUN go get golang.org/x/lint/golint
 
