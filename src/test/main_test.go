@@ -137,6 +137,32 @@ func TestCreateRecipeWithCredentials(t *testing.T) {
 	}
 }
 
+func TestCreateDuplicateServerWithCredentials(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	if err != nil {
+		t.Errorf("Error on http.NewRequest: %s", err)
+	}
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	// Now check duplicate
+
+	req, err = http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	if err != nil {
+		t.Errorf("Error on 2nd http.NewRequest: %s", err)
+	}
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusConflict, response.Code)
+}
+
 func TestGetRecipe(t *testing.T) {
 	clearTables()
 	addRecipes(1)
@@ -692,7 +718,7 @@ func addRecipeRating(recipe int, rating int) {
 const recipesTableCreationQuery = `CREATE TABLE IF NOT EXISTS recipes
 (
 	id BIGSERIAL,
-	name TEXT NOT NULL,
+	name TEXT NOT NULL UNIQUE,
 	preptime FLOAT(4) NOT NULL DEFAULT 0.0,
 	difficulty NUMERIC(1) NOT NULL CHECK (difficulty > 0) CHECK (difficulty < 4) DEFAULT 0,
 	vegetarian BOOLEAN NOT NULL DEFAULT false,

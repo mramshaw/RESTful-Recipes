@@ -9,8 +9,11 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+
 	// local packages
 	"recipes"
+
 	// GitHub packages
 	"github.com/julienschmidt/httprouter"
 	// Standard SQL Override
@@ -69,7 +72,11 @@ func (a *App) createRecipeEndpoint(w http.ResponseWriter, req *http.Request, _ h
 	}
 	defer req.Body.Close()
 	if err := r.CreateRecipe(a.DB); err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		if strings.HasPrefix(err.Error(), "pq: duplicate") { // Hack
+			respondWithError(w, http.StatusConflict, err.Error())
+		} else {
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+		}
 		return
 	}
 	respondWithJSON(w, http.StatusCreated, r)

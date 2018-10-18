@@ -58,7 +58,7 @@ func (r *Recipe) CreateRecipe(db *sql.DB) error {
 // GetRecipes returns a collection of known recipes.
 func GetRecipes(db *sql.DB, start int, count int) ([]Recipe, error) {
 	rows, err := db.Query(
-		"SELECT id, name, preptime, difficulty, vegetarian FROM recipes LIMIT $1 OFFSET $2",
+		"SELECT id, name, preptime, difficulty, vegetarian FROM recipes ORDER BY name LIMIT $1 OFFSET $2",
 		count, start)
 
 	if err != nil {
@@ -83,7 +83,7 @@ func GetRecipesRated(db *sql.DB, start int, count int, preptime float32) ([]Reci
 	rows, err := db.Query(
 		"SELECT id, name, preptime, difficulty, vegetarian, "+
 			"(SELECT COALESCE(AVG(rating),0) AS avg_rating FROM recipe_ratings WHERE recipe_id = id)"+
-			" FROM recipes WHERE preptime < $1 LIMIT $2 OFFSET $3",
+			" FROM recipes WHERE preptime < $1 ORDER BY name LIMIT $2 OFFSET $3",
 		preptime, count, start)
 
 	if err != nil {
