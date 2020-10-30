@@ -111,7 +111,7 @@ The command to run:
 
 ## To Do
 
-- [x] Upgrade to latest Go (as of posting, 1.11)
+- [x] Upgrade to latest Go (as of posting, 1.14.3)
 - [x] Add Basic Auth to certain endpoints (POST, PUT/PATCH, DELETE)
 - [x] 12-Factor Basic Auth parameters
 - [x] Fix code coverage testing
