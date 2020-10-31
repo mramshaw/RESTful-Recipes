@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -39,25 +40,20 @@ func TestEmptyTables(t *testing.T) {
 	clearTables()
 
 	req, err := http.NewRequest("GET", "/v1/recipes", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
 
-	if body := response.Body.String(); body != "[]" {
-		t.Errorf("Expected an empty array. Got %s", body)
-	}
+	body := response.Body.String()
+	assert.Equalf(t, body, "[]", "Expected an empty array. Got %s", body)
 }
 
 func TestGetBadRecipe(t *testing.T) {
 	clearTables()
 
 	req, err := http.NewRequest("GET", "/v1/recipes/a", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
@@ -67,18 +63,14 @@ func TestGetNonExistentRecipe(t *testing.T) {
 	clearTables()
 
 	req, err := http.NewRequest("GET", "/v1/recipes/11", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusNotFound, response.Code)
 
 	var m map[string]string
 	json.Unmarshal(response.Body.Bytes(), &m)
-	if m["error"] != "Recipe not found" {
-		t.Errorf("Expected the 'error' key of the response to be set to 'Recipe not found'. Got '%s'", m["error"])
-	}
+	assert.Equalf(t, m["error"], "Recipe not found", "Expected the 'error' key of the response to be set to 'Recipe not found'. Got '%s'", m["error"])
 }
 
 func TestCreateRecipeNoCredentials(t *testing.T) {
@@ -87,9 +79,7 @@ func TestCreateRecipeNoCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusUnauthorized, response.Code)
@@ -101,9 +91,7 @@ func TestCreateRecipeWithCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
@@ -112,29 +100,19 @@ func TestCreateRecipeWithCredentials(t *testing.T) {
 	var m map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &m)
 
-	if m["name"] != "test recipe" {
-		t.Errorf("Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
-	}
+	assert.Equalf(t, m["name"], "test recipe", "Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
 
-	if m["preptime"] != 0.1 {
-		t.Errorf("Expected recipe price to be '0.1'. Got '%v'", m["preptime"])
-	}
+	assert.Equalf(t, m["preptime"], 0.1, "Expected recipe prep time to be '0.1'. Got '%v'", m["preptime"])
 
 	// difficulty is compared to 2.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["difficulty"] != 2.0 {
-		t.Errorf("Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
-	}
+	assert.Equalf(t, m["difficulty"], 2.0, "Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
 
-	if m["vegetarian"] != true {
-		t.Errorf("Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
-	}
+	assert.Equalf(t, m["vegetarian"], true, "Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
 
 	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["id"] != 1.0 {
-		t.Errorf("Expected recipe ID to be '1'. Got '%v'", m["id"])
-	}
+	assert.Equalf(t, m["id"], 1.0, "Expected recipe ID to be '1'. Got '%v'", m["id"])
 }
 
 func TestCreateDuplicateServerWithCredentials(t *testing.T) {
@@ -143,9 +121,7 @@ func TestCreateDuplicateServerWithCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
@@ -154,9 +130,7 @@ func TestCreateDuplicateServerWithCredentials(t *testing.T) {
 	// Now check duplicate
 
 	req, err = http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on 2nd http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on 2nd http.NewRequest: %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
@@ -168,9 +142,7 @@ func TestGetRecipe(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -181,9 +153,7 @@ func TestGetRecipes(t *testing.T) {
 	addRecipes(3)
 
 	req, err := http.NewRequest("GET", "/v1/recipes?count=25&start=-1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest: %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -191,9 +161,7 @@ func TestGetRecipes(t *testing.T) {
 	var mm []map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &mm)
 
-	if len(mm) != 3 {
-		t.Errorf("Expected '3' recipes. Got '%v'", len(mm))
-	}
+	assert.Equalf(t, len(mm), 3, "Expected '3' recipes. Got '%v'", len(mm))
 }
 
 func TestUpdatePutRecipeNoCredentials(t *testing.T) {
@@ -201,9 +169,7 @@ func TestUpdatePutRecipeNoCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	var originalRecipe map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
@@ -211,9 +177,7 @@ func TestUpdatePutRecipeNoCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
 
 	req, err = http.NewRequest("PUT", "/v1/recipes/1", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (PUT): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusUnauthorized, response.Code)
@@ -224,9 +188,7 @@ func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	var originalRecipe map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
@@ -234,9 +196,7 @@ func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
 
 	req, err = http.NewRequest("PUT", "/v1/recipes/1", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (PUT): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
@@ -245,21 +205,12 @@ func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	var m map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &m)
 
-	if m["id"] != originalRecipe["id"] {
-		t.Errorf("Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
-	}
-	if m["name"] == originalRecipe["name"] {
-		t.Errorf("Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
-	}
-	if m["preptime"] == originalRecipe["preptime"] {
-		t.Errorf("Expected the price to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
-	}
-	if m["difficulty"] == originalRecipe["difficulty"] {
-		t.Errorf("Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
-	}
-	if m["vegetarian"] == originalRecipe["vegetarian"] {
-		t.Errorf("Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
-	}
+	assert.Equalf(t, m["id"], originalRecipe["id"], "Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
+
+	assert.NotEqualf(t, m["name"], originalRecipe["name"], "Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
+	assert.NotEqualf(t, m["preptime"], originalRecipe["preptime"], "Expected the prep time to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
+	assert.NotEqualf(t, m["difficulty"], originalRecipe["difficulty"], "Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
+	assert.NotEqualf(t, m["vegetarian"], originalRecipe["vegetarian"], "Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
 }
 
 func TestUpdatePatchRecipeNoCredentials(t *testing.T) {
@@ -267,9 +218,7 @@ func TestUpdatePatchRecipeNoCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	var originalRecipe map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
@@ -277,9 +226,7 @@ func TestUpdatePatchRecipeNoCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
 
 	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusUnauthorized, response.Code)
@@ -290,9 +237,7 @@ func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	var originalRecipe map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &originalRecipe)
@@ -300,9 +245,7 @@ func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
 	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
 
 	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (PATCH): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
@@ -311,21 +254,12 @@ func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
 	var m map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &m)
 
-	if m["id"] != originalRecipe["id"] {
-		t.Errorf("Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
-	}
-	if m["name"] == originalRecipe["name"] {
-		t.Errorf("Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
-	}
-	if m["preptime"] == originalRecipe["preptime"] {
-		t.Errorf("Expected the price to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
-	}
-	if m["difficulty"] == originalRecipe["difficulty"] {
-		t.Errorf("Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
-	}
-	if m["vegetarian"] == originalRecipe["vegetarian"] {
-		t.Errorf("Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
-	}
+	assert.Equalf(t, m["id"], originalRecipe["id"], "Expected the id to remain the same (%v). Got %v", originalRecipe["id"], m["id"])
+
+	assert.NotEqualf(t, m["name"], originalRecipe["name"], "Expected the name to change from '%v' to '%v'. Got '%v'", originalRecipe["name"], m["name"], m["name"])
+	assert.NotEqualf(t, m["preptime"], originalRecipe["preptime"], "Expected the prep time to change from '%v' to '%v'. Got '%v'", originalRecipe["preptime"], m["preptime"], m["preptime"])
+	assert.NotEqualf(t, m["difficulty"], originalRecipe["difficulty"], "Expected the difficulty to change from '%v' to '%v'. Got '%v'", originalRecipe["difficulty"], m["difficulty"], m["difficulty"])
+	assert.NotEqualf(t, m["vegetarian"], originalRecipe["vegetarian"], "Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
 }
 
 func TestDeleteRecipeNoCredentials(t *testing.T) {
@@ -333,16 +267,12 @@ func TestDeleteRecipeNoCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	req, err = http.NewRequest("DELETE", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (DELETE): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (DELETE): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusUnauthorized, response.Code)
@@ -353,25 +283,19 @@ func TestDeleteRecipeWithCredentials(t *testing.T) {
 	addRecipes(1)
 
 	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
 	response := executeRequest(req)
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	req, err = http.NewRequest("DELETE", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (DELETE): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (DELETE): %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	req, err = http.NewRequest("GET", "/v1/recipes/1", nil)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (Second GET): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (Second GET): %s", err)
 	response = executeRequest(req)
 	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
@@ -383,9 +307,7 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 }
 
 func checkResponseCode(t *testing.T, expected, actual int) {
-	if expected != actual {
-		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
-	}
+	assert.Equalf(t, expected, actual, "Expected response code %d - Got %d", expected, actual)
 }
 
 func ensureTablesExist() {
@@ -410,9 +332,7 @@ func TestAddRating(t *testing.T) {
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
@@ -421,9 +341,7 @@ func TestAddRating(t *testing.T) {
 	payload = []byte(`{"rating":3}`)
 
 	req, err = http.NewRequest("POST", "/v1/recipes/1/rating", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (2nd POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -433,9 +351,7 @@ func TestAddRating(t *testing.T) {
 
 	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["rating_id"] != 1.0 {
-		t.Errorf("Expected rating ID to be '1'. Got '%v'", m["rating_id"])
-	}
+	assert.Equalf(t, m["rating_id"], 1.0, "Expected rating ID to be '1'. Got '%v'", m["rating_id"])
 }
 
 func TestSearch(t *testing.T) {
@@ -444,9 +360,7 @@ func TestSearch(t *testing.T) {
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (1st POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
 	req.SetBasicAuth(authUser, authPassword)
 	response := executeRequest(req)
 
@@ -455,9 +369,7 @@ func TestSearch(t *testing.T) {
 	payload = []byte(`{"rating":3}`)
 
 	req, err = http.NewRequest("POST", "/v1/recipes/1/rating", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (2nd POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -467,16 +379,12 @@ func TestSearch(t *testing.T) {
 
 	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["rating_id"] != 1.0 {
-		t.Errorf("Expected rating ID to be '1'. Got '%v'", m["rating_id"])
-	}
+	assert.Equalf(t, m["rating_id"], 1.0, "Expected rating ID to be '1'. Got '%v'", m["rating_id"])
 
 	payload = []byte(`{"rating":2}`)
 
 	req, err = http.NewRequest("POST", "/v1/recipes/1/rating", bytes.NewBuffer(payload))
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (3rd POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (3rd POST): %s", err)
 	response = executeRequest(req)
 
 	checkResponseCode(t, http.StatusCreated, response.Code)
@@ -485,9 +393,7 @@ func TestSearch(t *testing.T) {
 
 	// the id is compared to 2.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["rating_id"] != 2.0 {
-		t.Errorf("Expected rating ID to be '2'. Got '%v'", m["rating_id"])
-	}
+	assert.Equalf(t, m["rating_id"], 2.0, "Expected rating ID to be '2'. Got '%v'", m["rating_id"])
 
 	var bb bytes.Buffer
 	mw := multipart.NewWriter(&bb)
@@ -497,9 +403,7 @@ func TestSearch(t *testing.T) {
 	mw.Close()
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (4th POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (4th POST): %s", err)
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	response = executeRequest(req)
@@ -511,35 +415,23 @@ func TestSearch(t *testing.T) {
 	// only want the first one
 	m = mm[0]
 
-	if m["name"] != "test recipe" {
-		t.Errorf("Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
-	}
+	assert.Equalf(t, m["name"], "test recipe", "Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
 
-	if m["preptime"] != 0.1 {
-		t.Errorf("Expected recipe price to be '0.1'. Got '%v'", m["preptime"])
-	}
+	assert.Equalf(t, m["preptime"], 0.1, "Expected recipe prep time to be '0.1'. Got '%v'", m["preptime"])
 
 	// difficulty is compared to 2.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["difficulty"] != 2.0 {
-		t.Errorf("Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
-	}
+	assert.Equalf(t, m["difficulty"], 2.0, "Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
 
-	if m["vegetarian"] != true {
-		t.Errorf("Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
-	}
+	assert.Equalf(t, m["vegetarian"], true, "Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
 
 	// the avg_rating is compared to 2.5 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["avg_rating"] != 2.5 {
-		t.Errorf("Expected average recipe rating to be '2.5'. Got '%v'", m["id"])
-	}
+	assert.Equalf(t, m["avg_rating"], 2.5, "Expected average recipe rating to be '2.5'. Got '%v'", m["avg_rating"])
 
 	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["id"] != 1.0 {
-		t.Errorf("Expected recipe ID to be '1'. Got '%v'", m["id"])
-	}
+	assert.Equalf(t, m["id"], 1.0, "Expected recipe ID to be '1'. Got '%v'", m["id"])
 
 	mw = multipart.NewWriter(&bb)
 	mw.WriteField("count", "15")
@@ -548,9 +440,7 @@ func TestSearch(t *testing.T) {
 	mw.Close()
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (5th POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (5th POST): %s", err)
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	response = executeRequest(req)
@@ -561,35 +451,23 @@ func TestSearch(t *testing.T) {
 	// only want the first one
 	m = mm[0]
 
-	if m["name"] != "test recipe" {
-		t.Errorf("Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
-	}
+	assert.Equalf(t, m["name"], "test recipe", "Expected recipe name to be 'test recipe'. Got '%v'", m["name"])
 
-	if m["preptime"] != 0.1 {
-		t.Errorf("Expected recipe price to be '0.1'. Got '%v'", m["preptime"])
-	}
+	assert.Equalf(t, m["preptime"], 0.1, "Expected recipe prep time to be '0.1'. Got '%v'", m["preptime"])
 
 	// difficulty is compared to 2.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["difficulty"] != 2.0 {
-		t.Errorf("Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
-	}
+	assert.Equalf(t, m["difficulty"], 2.0, "Expected recipe difficulty to be '2'. Got '%v'", m["difficulty"])
 
-	if m["vegetarian"] != true {
-		t.Errorf("Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
-	}
+	assert.Equalf(t, m["vegetarian"], true, "Expected recipe vegetarian to be 'true'. Got '%v'", m["vegetarian"])
 
 	// the avg_rating is compared to 2.5 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["avg_rating"] != 2.5 {
-		t.Errorf("Expected average recipe rating to be '2.5'. Got '%v'", m["id"])
-	}
+	assert.Equalf(t, m["avg_rating"], 2.5, "Expected average recipe rating to be '2.5'. Got '%v'", m["avg_rating"])
 
 	// the id is compared to 1.0 because JSON unmarshaling converts numbers to
 	//     floats (float64), when the target is a map[string]interface{}
-	if m["id"] != 1.0 {
-		t.Errorf("Expected recipe ID to be '1'. Got '%v'", m["id"])
-	}
+	assert.Equalf(t, m["id"], 1.0, "Expected recipe ID to be '1'. Got '%v'", m["id"])
 
 	addRecipes(12)
 
@@ -599,9 +477,7 @@ func TestSearch(t *testing.T) {
 	mw.Close()
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (6th POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (6th POST): %s", err)
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	response = executeRequest(req)
@@ -611,9 +487,7 @@ func TestSearch(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &mm)
 
 	// Search page limit
-	if len(mm) != 10 {
-		t.Errorf("Expected '10' recipes. Got '%v'", len(mm))
-	}
+	assert.Equalf(t, len(mm), 10, "Expected '10' recipes. Got '%v'", len(mm))
 
 	mw = multipart.NewWriter(&bb)
 	mw.WriteField("count", "10")
@@ -622,9 +496,7 @@ func TestSearch(t *testing.T) {
 	mw.Close()
 
 	req, err = http.NewRequest("POST", "/v1/search/recipes", &bb)
-	if err != nil {
-		t.Errorf("Error on http.NewRequest (7th POST): %s", err)
-	}
+	assert.Nilf(t, err, "Error on http.NewRequest (7th POST): %s", err)
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	response = executeRequest(req)
@@ -634,9 +506,7 @@ func TestSearch(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &mm)
 
 	// Search page limit
-	if len(mm) != 2 {
-		t.Errorf("Expected '2' recipes. Got '%v'", len(mm))
-	}
+	assert.Equalf(t, len(mm), 2, "Expected '2' recipes. Got '%v'", len(mm))
 }
 
 func BenchmarkCreateRateAndDeleteRecipe(b *testing.B) {
@@ -647,48 +517,33 @@ func BenchmarkCreateRateAndDeleteRecipe(b *testing.B) {
 		payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
 
 		req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
-		if err != nil {
-			b.Errorf("Error on http.NewRequest: %s", err)
-		}
+		assert.Nilf(b, err, "Error on http.NewRequest: %s", err)
 		response := executeRequest(req)
 
-		if response.Code != http.StatusCreated {
-			b.Errorf("Expected response code %d. Got %d\n", http.StatusCreated, response.Code)
-		}
+		assert.Equalf(b, response.Code, http.StatusCreated, "Expected response code %d - Got %d", http.StatusCreated, response.Code)
 
 		// Rate recipe
 		payload = []byte(`{"rating":3}`)
 
 		req, err = http.NewRequest("POST", "/v1/recipes/"+strconv.Itoa(i)+"/rating", bytes.NewBuffer(payload))
-		if err != nil {
-			b.Errorf("Error on http.NewRequest (rating): %s", err)
-		}
+		assert.Nilf(b, err, "Error on http.NewRequest (rating): %s", err)
 		response = executeRequest(req)
 
-		if response.Code != http.StatusCreated {
-			b.Errorf("Expected response code %d. Got %d\n", http.StatusCreated, response.Code)
-		}
+		assert.Equalf(b, response.Code, http.StatusCreated, "Expected response code (rating) %d - Got %d", http.StatusCreated, response.Code)
 
 		// Delete recipe
 		req, err = http.NewRequest("DELETE", "/v1/recipes/"+strconv.Itoa(i), nil)
-		if err != nil {
-			b.Errorf("Error on http.NewRequest (DELETE): %s", err)
-		}
+		assert.Nilf(b, err, "Error on http.NewRequest (DELETE): %s", err)
 		response = executeRequest(req)
 
-		if response.Code != http.StatusOK {
-			b.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
-		}
+		assert.Equalf(b, response.Code, http.StatusOK, "Expected response code %d - Got %d", http.StatusOK, response.Code)
 
 		// Query recipe
 		req, err = http.NewRequest("GET", "/v1/recipes/"+strconv.Itoa(i), nil)
-		if err != nil {
-			b.Errorf("Error on http.NewRequest (GET): %s", err)
-		}
+		assert.Nilf(b, err, "Error on http.NewRequest (GET): %s", err)
 		response = executeRequest(req)
-		if response.Code != http.StatusNotFound {
-			b.Errorf("Expected response code %d. Got %d\n", http.StatusNotFound, response.Code)
-		}
+
+		assert.Equalf(b, response.Code, http.StatusNotFound, "Expected response code %d - Got %d", http.StatusNotFound, response.Code)
 	}
 }
 
