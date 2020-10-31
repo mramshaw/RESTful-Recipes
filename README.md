@@ -26,6 +26,7 @@ All testing can be done with [curl](CURLs.txt).
 
 - uses [httprouter](https://github.com/julienschmidt/httprouter)
 - uses [Pure Go postgres driver](https://github.com/lib/pq)
+- uses [sqlx](https://github.com/jmoiron/sqlx) for [sql](https://godoc.org/database/sql) extensions
 - uses [testify assertions](https://github.com/stretchr/testify/assert)
 
 
@@ -123,6 +124,7 @@ The command to run:
 - [ ] Add tests for the DAO
 - [ ] Add a health check
 - [x] Migrate from Gorilla/mux to julienschmidt/httprouter
+- [x] Migrate to [sqlx](https://github.com/jmoiron/sqlx) for some [sql](https://godoc.org/database/sql) extensions
 - [x] Implement [testify](https://github.com/stretchr/testify) [assertions](https://godoc.org/github.com/stretchr/testify/assert)
 - [ ] Implement [testify](https://github.com/stretchr/testify) [suite](https://godoc.org/github.com/stretchr/testify/suite)
 - [ ] Implement CORS

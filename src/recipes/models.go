@@ -1,6 +1,10 @@
 package recipes
 
-import "database/sql"
+import (
+	"database/sql"
+	// GitHub packages
+	"github.com/jmoiron/sqlx"
+)
 
 // The Recipe entity is used to marshall/unmarshall JSON.
 type Recipe struct {
@@ -29,26 +33,26 @@ type RecipeRating struct {
 }
 
 // GetRecipe returns a single specified recipe.
-func (r *Recipe) GetRecipe(db *sql.DB) error {
+func (r *Recipe) GetRecipe(db *sqlx.DB) error {
 	return db.QueryRow("SELECT name, preptime, difficulty, vegetarian FROM recipes WHERE id=$1",
 		r.ID).Scan(&r.Name, &r.PrepTime, &r.Difficulty, &r.Vegetarian)
 }
 
 // UpdateRecipe is used to modify a specific recipe.
-func (r *Recipe) UpdateRecipe(db *sql.DB) (res sql.Result, err error) {
+func (r *Recipe) UpdateRecipe(db *sqlx.DB) (res sql.Result, err error) {
 	res, err = db.Exec("UPDATE recipes SET name=$1, preptime=$2, difficulty=$3, vegetarian=$4 WHERE id=$5",
 		r.Name, r.PrepTime, r.Difficulty, r.Vegetarian, r.ID)
 	return res, err
 }
 
 // DeleteRecipe is used to delete a specific recipe.
-func (r *Recipe) DeleteRecipe(db *sql.DB) (res sql.Result, err error) {
+func (r *Recipe) DeleteRecipe(db *sqlx.DB) (res sql.Result, err error) {
 	res, err = db.Exec("DELETE FROM recipes WHERE id=$1", r.ID)
 	return res, err
 }
 
 // CreateRecipe is used to create a single recipe.
-func (r *Recipe) CreateRecipe(db *sql.DB) error {
+func (r *Recipe) CreateRecipe(db *sqlx.DB) error {
 	err := db.QueryRow(
 		"INSERT INTO recipes(name, preptime, difficulty, vegetarian) VALUES($1, $2, $3, $4) RETURNING id",
 		r.Name, r.PrepTime, r.Difficulty, r.Vegetarian).Scan(&r.ID)
@@ -56,7 +60,7 @@ func (r *Recipe) CreateRecipe(db *sql.DB) error {
 }
 
 // GetRecipes returns a collection of known recipes.
-func GetRecipes(db *sql.DB, start int, count int) ([]Recipe, error) {
+func GetRecipes(db *sqlx.DB, start int, count int) ([]Recipe, error) {
 	rows, err := db.Query(
 		"SELECT id, name, preptime, difficulty, vegetarian FROM recipes ORDER BY name LIMIT $1 OFFSET $2",
 		count, start)
@@ -79,7 +83,7 @@ func GetRecipes(db *sql.DB, start int, count int) ([]Recipe, error) {
 }
 
 // GetRecipesRated returns a collection of rated recipes.
-func GetRecipesRated(db *sql.DB, start int, count int, preptime float32) ([]RecipeRated, error) {
+func GetRecipesRated(db *sqlx.DB, start int, count int, preptime float32) ([]RecipeRated, error) {
 	rows, err := db.Query(
 		"SELECT id, name, preptime, difficulty, vegetarian, "+
 			"(SELECT COALESCE(AVG(rating),0) AS avg_rating FROM recipe_ratings WHERE recipe_id = id)"+
@@ -106,7 +110,7 @@ func GetRecipesRated(db *sql.DB, start int, count int, preptime float32) ([]Reci
 // AddRecipeRating adds a rating for a specific recipe.
 // There can be many ratings for any specific recipe
 // and the ratings are never overwritten.
-func (rr *RecipeRating) AddRecipeRating(db *sql.DB) error {
+func (rr *RecipeRating) AddRecipeRating(db *sqlx.DB) error {
 	err := db.QueryRow(
 		"INSERT INTO recipe_ratings(recipe_id, rating) VALUES($1, $2) RETURNING rating_id",
 		rr.RecipeID, rr.Rating).Scan(&rr.ID)

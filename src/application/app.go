@@ -15,6 +15,7 @@ import (
 	"recipes"
 
 	// GitHub packages
+	"github.com/jmoiron/sqlx"
 	"github.com/julienschmidt/httprouter"
 	// Standard SQL Override
 	_ "github.com/lib/pq"
@@ -23,7 +24,7 @@ import (
 // App represents the application
 type App struct {
 	Router *httprouter.Router
-	DB     *sql.DB
+	DB     *sqlx.DB
 }
 
 func (a *App) getRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
@@ -199,7 +200,7 @@ func (a *App) Initialize(dbHost, dbUser, dbPassword, dbName, authUser, authPassw
 
 	var err error
 
-	a.DB, err = sql.Open("postgres", connectionString)
+	a.DB, err = sqlx.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
