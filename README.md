@@ -11,7 +11,7 @@ This builds on my [Simple REST API in Golang](https://github.com/mramshaw/Simple
 
 All data is stored in [PostgreSQL](https://www.postgresql.org/), all transfer is via JSON.
 
-All dependencies are handled via [Docker](https://www.docker.com/products/docker) and __docker-compose__.
+All dependencies are handled via [Docker](https://www.docker.com/products/docker) and [docker-compose](https://github.com/docker/compose).
 
 TDD (Test-Driven Development) is implemented; the build will fail if the tests do not pass.
 
@@ -26,8 +26,31 @@ All testing can be done with [curl](CURLs.txt).
 
 - uses [httprouter](https://github.com/julienschmidt/httprouter)
 - uses [Pure Go postgres driver](https://github.com/lib/pq)
-- uses [sqlx](https://github.com/jmoiron/sqlx) for [sql](https://godoc.org/database/sql) extensions
-- uses [testify assertions](https://github.com/stretchr/testify/assert)
+- uses [sqlx](#sqlx)
+- uses [testify assertions](#testify-assertions)
+
+#### sqlx
+
+[sqlx](https://github.com/jmoiron/sqlx) offers some [database/sql](https://godoc.org/database/sql)
+extensions.
+
+There is a useful [Illustrated guide to SQLX](http://jmoiron.github.io/sqlx/).
+
+It is not exactly a ___drop-in___ replacement for __database/sql__, as it is not quite a full
+superset. I found that I still needed to import both dependencies due to some primitives (such
+as __ErrNoRows__) that are not included in __sqlx__.
+
+I am not entirely sure I would use this library in my normal workflow, although it does offer
+some interesting new options (the __Illustrated Guide__ is very helpful here).
+
+#### testify assertions
+
+In terms of simplifying tests, [testify assertions](https://github.com/stretchr/testify/assert)
+really make test cases much clearer - while also cutting down on boiler-plate.
+
+I'm generally pretty reluctant to introduce additional external dependencies unless they really
+deliver value. In my opinion this addition is justified as the test cases become much easier
+to follow with assertions.
 
 
 ## To Run
@@ -42,7 +65,7 @@ This image will contain all of the Go dependencies and should only need to be bu
 
 For the very first run, `golang` may fail as it takes `postgres` some time to ramp up.
 
-A successful `golang` startup should show the following as the last line of `docker-compose logs golang`:
+A successful `golang` startup should show the following as the last line of <kbd>docker-compose logs golang</kbd>
 
     golang_1    | 2018/02/24 18:38:01 Now serving recipes ...
 
