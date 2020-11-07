@@ -115,7 +115,31 @@ func TestCreateRecipeWithCredentials(t *testing.T) {
 	assert.Equalf(t, m["id"], 1.0, "Expected recipe ID to be '1'. Got '%v'", m["id"])
 }
 
-func TestCreateDuplicateServerWithCredentials(t *testing.T) {
+func TestCreateRecipeWithCredentialsAndInvalidPayload(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"invalid json"}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestCreateRecipeWithCredentialsAndNilPayload(t *testing.T) {
+	clearTables()
+
+	req, err := http.NewRequest("POST", "/v1/recipes", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest: %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestCreateDuplicateRecipeWithCredentials(t *testing.T) {
 	clearTables()
 
 	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)

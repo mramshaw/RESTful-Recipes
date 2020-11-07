@@ -66,6 +66,10 @@ func (a *App) getRecipesEndpoint(w http.ResponseWriter, req *http.Request, _ htt
 
 func (a *App) createRecipeEndpoint(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var r recipes.Recipe
+	if req.Body == nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload (missing)")
+		return
+	}
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&r); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
