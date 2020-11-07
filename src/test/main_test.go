@@ -213,6 +213,78 @@ func TestUpdatePutRecipeWithCredentials(t *testing.T) {
 	assert.NotEqualf(t, m["vegetarian"], originalRecipe["vegetarian"], "Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
 }
 
+func TestUpdatePutRecipeWithCredentialsAndInvalidID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("PUT", "/v1/recipes/Z", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestUpdatePutRecipeWithCredentialsAndMismatchedID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
+
+	req, err = http.NewRequest("PUT", "/v1/recipes/0", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusNotFound, response.Code)
+}
+
+func TestUpdatePutRecipeWithCredentialsAndInvalidPayload(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	payload := []byte(`{"invalid json"}`)
+
+	req, err = http.NewRequest("PUT", "/v1/recipes/1", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestUpdatePutRecipeWithCredentialsAndNilPayload(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("PUT", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (PUT): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
 func TestUpdatePatchRecipeNoCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
@@ -262,6 +334,78 @@ func TestUpdatePatchRecipeWithCredentials(t *testing.T) {
 	assert.NotEqualf(t, m["vegetarian"], originalRecipe["vegetarian"], "Expected the vegetarian to change from '%v' to '%v'. Got '%v'", originalRecipe["vegetarian"], m["vegetarian"], m["vegetarian"])
 }
 
+func TestUpdatePatchRecipeWithCredentialsAndInvalidID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/Z", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestUpdatePatchRecipeWithCredentialsAndMismatchedID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	payload := []byte(`{"name":"test recipe - updated","preptime":11.11,"difficulty":3,"vegetarian":false}`)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/0", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusNotFound, response.Code)
+}
+
+func TestUpdatePatchRecipeWithCredentialsAndInvalidPayload(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	payload := []byte(`{"invalid json"}`)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/1", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestUpdatePatchRecipeWithCredentialsAndNilPayload(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("PATCH", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (PATCH): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
 func TestDeleteRecipeNoCredentials(t *testing.T) {
 	clearTables()
 	addRecipes(1)
@@ -297,6 +441,40 @@ func TestDeleteRecipeWithCredentials(t *testing.T) {
 	req, err = http.NewRequest("GET", "/v1/recipes/1", nil)
 	assert.Nilf(t, err, "Error on http.NewRequest (Second GET): %s", err)
 	response = executeRequest(req)
+	checkResponseCode(t, http.StatusNotFound, response.Code)
+}
+
+func TestDeleteRecipeWithCredentialsAndInvalidID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("DELETE", "/v1/recipes/Z", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (DELETE): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestDeleteRecipeWithCredentialsAndMismatchedID(t *testing.T) {
+	clearTables()
+	addRecipes(1)
+
+	req, err := http.NewRequest("GET", "/v1/recipes/1", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (GET): %s", err)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, err = http.NewRequest("DELETE", "/v1/recipes/0", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (DELETE): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response = executeRequest(req)
+
 	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
 

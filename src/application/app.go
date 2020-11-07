@@ -90,6 +90,10 @@ func (a *App) modifyRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps 
 		return
 	}
 	var r recipes.Recipe
+	if req.Body == nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload (missing)")
+		return
+	}
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&r); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -97,8 +101,14 @@ func (a *App) modifyRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps 
 	}
 	defer req.Body.Close()
 	r.ID = id
-	if _, err := r.UpdateRecipe(a.DB); err != nil {
+	res, err := r.UpdateRecipe(a.DB)
+	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	updated, _ := res.RowsAffected()
+	if updated == 0 {
+		respondWithError(w, http.StatusNotFound, "Recipe ID not found")
 		return
 	}
 	respondWithJSON(w, http.StatusOK, r)
@@ -111,8 +121,14 @@ func (a *App) deleteRecipeEndpoint(w http.ResponseWriter, req *http.Request, ps 
 		return
 	}
 	r := recipes.Recipe{ID: id}
-	if _, err := r.DeleteRecipe(a.DB); err != nil {
+	res, err := r.DeleteRecipe(a.DB)
+	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	deleted, _ := res.RowsAffected()
+	if deleted == 0 {
+		respondWithError(w, http.StatusNotFound, "Recipe ID not found")
 		return
 	}
 	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
