@@ -145,6 +145,10 @@ func (a *App) addRatingEndpoint(w http.ResponseWriter, req *http.Request, ps htt
 		return
 	}
 	rr := recipes.RecipeRating{RecipeID: recipeID}
+	if req.Body == nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload (missing)")
+		return
+	}
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&rr); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")

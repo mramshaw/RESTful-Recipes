@@ -556,6 +556,88 @@ func TestAddRating(t *testing.T) {
 	assert.Equalf(t, m["rating_id"], 1.0, "Expected rating ID to be '1'. Got '%v'", m["rating_id"])
 }
 
+func TestAddRatingWithInvalidID(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	payload = []byte(`{"rating":3}`)
+
+	req, err = http.NewRequest("POST", "/v1/recipes/Z/rating", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestAddRatingWithMismatchedID(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	payload = []byte(`{"rating":3}`)
+
+	req, err = http.NewRequest("POST", "/v1/recipes/99/rating", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusInternalServerError, response.Code)
+}
+
+func TestAddRatingWithInvalidPayload(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	payload = []byte(`{"invalid json"}`)
+
+	req, err = http.NewRequest("POST", "/v1/recipes/1/rating", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestAddRatingWithNilPayload(t *testing.T) {
+	clearTables()
+
+	payload := []byte(`{"name":"test recipe","preptime":0.1,"difficulty":2,"vegetarian":true}`)
+
+	req, err := http.NewRequest("POST", "/v1/recipes", bytes.NewBuffer(payload))
+	assert.Nilf(t, err, "Error on http.NewRequest (1st POST): %s", err)
+	req.SetBasicAuth(authUser, authPassword)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	req, err = http.NewRequest("POST", "/v1/recipes/1/rating", nil)
+	assert.Nilf(t, err, "Error on http.NewRequest (2nd POST): %s", err)
+	response = executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
 func TestSearch(t *testing.T) {
 	clearTables()
 

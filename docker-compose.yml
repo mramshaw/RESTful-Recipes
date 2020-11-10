@@ -7,7 +7,7 @@ services:
 
     golang:
         build: .
-        image: mramshaw4docs/golang:1.14.3
+        image: mramshaw4docs/golang:1.15.4
         networks:
           recipes:
         depends_on:
